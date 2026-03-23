@@ -1,0 +1,75 @@
+# Austria (AT) – technical limits and default control behaviour
+# Units:
+#   - frequency in Hz
+#   - voltage in pu (per unit)
+#   - power P in MW, Q in MVAr
+# Notes:
+#   - time_profile entries use max_minutes (None = unlimited)
+
+country: AT
+
+frequency:
+  # "Normal" admissible band (used as a reference); time_profile contains extended bands
+  min_hz: 49.0
+  max_hz: 51.0
+  time_profile:
+    # lower frequency ride-through bands
+    - {low: 47.5, high: 48.5, max_minutes: 60}
+    - {low: 48.5, high: 49.0, max_minutes: 90}
+    # normal operating range (unlimited)
+    - {low: 49.0, high: 51.0, max_minutes: null}
+    # upper frequency band
+    - {low: 51.0, high: 51.5, max_minutes: 30}
+
+voltage:
+  min_pu: 0.9
+  max_pu: 1.1
+  time_profile:
+    - {low: 0.85, high: 0.90, max_minutes: 60}
+    - {low: 0.90, high: 1.10, max_minutes: null}
+    - {low: 1.10, high: 1.12, max_minutes: 10}
+
+control_defaults:
+  # Supported modes in our controller code:
+  #   - cosphi_fixed
+  #   - q_fixed
+  #   - cosphi_p
+  #   - q_u
+  reactive_control_mode: "cosphi_fixed"
+
+  # Fixed power factor setpoint (cosphi_fixed)
+  cosphi_fix: 1.0
+
+  # Fixed reactive power setpoint (q_fixed)
+  q_fix_var: 0.0
+
+  # Hard Q bounds (absolute, in MVAr)
+  q_min: -0.436
+  q_max: 0.436
+
+  # Voltage-dependent capability envelope (per-unit on S_n), used as an additional clamp
+  q_capability:
+    overexcited:   # Q > 0 (inductive)
+      u_points: [0.85, 0.95, 1.05, 1.10]
+      q_points: [0.38, 0.436, 0.436, 0.0]
+    underexcited:  # Q < 0 (capacitive)
+      u_points: [0.85, 0.90, 0.95, 1.00, 1.10]
+      q_points: [0.0, 0.0, -0.414, -0.436, -0.436]
+
+  # Volt-Watt (P(U)) limiter (factor in [0..1])
+  p_u:
+    enabled: true
+    u_points: [1.10, 1.12]
+    p_points: [1.0, 0.0]
+
+  # cos(phi) = f(P) curve (P normalized by P_max)
+  cosphi_p:
+    p_points: [0.0, 0.5, 1.0]
+    cosphi_points: [1.0, 1.0, 0.9]
+    direction: "underexcited"  # sets Q sign convention in our controller
+
+  # Q(U) curve (Q normalized by q_max_mvar below)
+  q_u:
+    u_points: [0.92, 0.96, 1.05, 1.08]
+    q_points: [1.0, 0.0, 0.0, -1.0]
+    q_max_mvar: 0.436
