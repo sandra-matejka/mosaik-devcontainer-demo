@@ -1,0 +1,53 @@
+# Italy (IT) – technical limits and default control behaviour
+
+country: IT
+
+frequency:
+  min_hz: 47.5
+  max_hz: 51.5
+  time_profile:
+    # "no time limitation" in this simplified model
+    - {low: 47.5, high: 51.5, max_minutes: null}
+
+voltage:
+  min_pu: 0.9
+  max_pu: 1.1
+  time_profile:
+    - {low: 0.90, high: 1.10, max_minutes: null}
+    - {low: 1.10, high: 1.12, max_minutes: 10}
+
+control_defaults:
+  reactive_control_mode: "q_u"
+  cosphi_fix: 1.0
+  q_fix_var: 0.0
+
+  # Hard Q bounds (MVAr)
+  q_min: -0.4843
+  q_max: 0.4843
+
+  # Simplified rectangular capability envelope
+  q_capability:
+    overexcited:
+      u_points: [0.9, 1.0, 1.1]
+      q_points: [0.4843, 0.4843, 0.0]
+    underexcited:
+      u_points: [0.9, 1.0, 1.1]
+      q_points: [0.0, -0.4843, -0.4843]
+
+  # Volt-Watt (P(U)) limiter (factor in [0..1])
+  p_u:
+    enabled: true
+    u_points: [1.10, 1.12]
+    p_points: [1.0, 0.0]
+
+  # cos(phi) = f(P) curve
+  cosphi_p:
+    p_points: [0.2, 0.5, 1.0]
+    cosphi_points: [1.0, 1.0, 0.9]
+    direction: "underexcited"
+
+  # Q(U) curve
+  q_u:
+    u_points: [0.90, 0.92, 1.08, 1.10]
+    q_points: [1.0, 0.0, 0.0, -1.0]
+    q_max_mvar: 0.4843
