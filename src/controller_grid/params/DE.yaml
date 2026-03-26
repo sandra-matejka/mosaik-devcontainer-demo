@@ -1,0 +1,58 @@
+# Germany (DE) – technical limits and default control behaviour
+# Notes:
+# - Use dot as decimal separator (YAML numbers), e.g. 51.0 not 51,0.
+# - time_profile max_minutes: null means unlimited.
+
+country: DE
+
+frequency:
+  min_hz: 47.5
+  max_hz: 51.5
+  time_profile:
+    - {low: 47.5, high: 48.5, max_minutes: 30}
+    - {low: 48.5, high: 49.0, max_minutes: 30}
+    - {low: 49.0, high: 51.0, max_minutes: null}
+    - {low: 51.0, high: 51.5, max_minutes: 30}
+
+voltage:
+  # Normal supply voltage band (EN 50160 typical) – used as reference bounds
+  min_pu: 0.9
+  max_pu: 1.1
+  time_profile:
+    - {low: 0.90, high: 1.10, max_minutes: null}
+
+control_defaults:
+  # In many German LV contexts Q(U) is used as default behaviour.
+  reactive_control_mode: "q_u"
+  cosphi_fix: 1.0
+  q_fix_var: 0.0
+
+  # Hard Q bounds (MVAr) – if you use absolute limits here, ensure consistency with sn_mva in the controller
+  q_min: -0.4843
+  q_max: 0.4843
+
+  # Capability envelope – simplified
+  q_capability:
+    overexcited:
+      u_points: [0.0, 0.9]
+      q_points: [0.0, 0.4843]
+    underexcited:
+      u_points: [0.0, 0.9]
+      q_points: [0.0, -0.4843]
+
+  # Volt-Watt (P(U)) – placeholder default values
+  p_u:
+    enabled: true
+    u_points: [1.10, 1.12]
+    p_points: [1.0, 0.0]
+
+  # Q(U) standard curve (piecewise linear)
+  q_u:
+    u_points: [0.93, 0.97, 1.03, 1.07]
+    q_points: [-0.4843, 0.0, 0.0, 0.4843]
+
+  # cos(phi) = f(P) (simplified single curve)
+  cosphi_p:
+    p_points: [0.1, 0.5, 1.0]
+    cosphi_points: [1.0, 1.0, 0.90]
+    direction: "underexcited"
